@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小竞赛抽人系统 - 12个组抽人</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 50%, #4a69bd 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #ffd700, #ff9800);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            padding: 5px 20px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        .content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-display {
+            flex: 2;
+            min-width: 320px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            color: #ffd700;
+        }
+        
+        .group-selector {
+            margin-bottom: 25px;
+        }
+        
+        .group-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .group-btn {
+            padding: 14px 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .group-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .group-btn.active {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
+            border-color: #ff9800;
+        }
+        
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 18px 10px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .draw-btn {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+        }
+        
+        .draw-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .reset-btn {
+            background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(156, 39, 176, 0.4);
+        }
+        
+        .draw-all-btn {
+            background: linear-gradient(135deg, #2196F3, #0D47A1);
+            color: white;
+        }
+        
+        .draw-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        .reset-all-btn {
+            background: linear-gradient(135deg, #f44336, #b71c1c);
+            color: white;
+        }
+        
+        .reset-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(244, 67, 54, 0.4);
+        }
+        
+        .members-list {
+            margin-top: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .members-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .members-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .member-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .result-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-card.drawn {
+            background: rgba(255, 215, 0, 0.15);
+            border: 2px solid #ffd700;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .result-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .result-name {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .result-status {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .drawing-animation {
+            animation: drawing 0.8s infinite alternate;
+        }
+        
+        @keyframes drawing {
+            from { transform: scale(1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            to { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        }
+        
+        .winner-effect {
+            animation: winner 1.5s ease;
+        }
+        
+        @keyframes winner {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+            50% { transform: scale(1.05); }
+            75% { transform: scale(1.1); box-shadow: 0 0 40px rgba(255, 215, 0, 0.9); }
+            100% { transform: scale(1); }
+        }
+        
+        .history-panel {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .history-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+        
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-item:nth-child(odd) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-winner {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .group-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .result-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .result-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .group-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎉 小竞赛抽人系统 🎉</h1>
+            <p class="subtitle">12个组，每个组抽取1名幸运儿</p>
+        </header>
+        
+        <div class="content-wrapper">
+            <div class="control-panel">
+                <h2 class="panel-title">抽人控制</h2>
+                
+                <div class="group-selector">
+                    <p style="margin-bottom: 15px; font-size: 1.1rem;">请选择要抽人的组：</p>
+                    <div class="group-buttons" id="groupButtons">
+                        <!-- 小组按钮将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="members-list">
+                    <div class="members-title" id="membersTitle">第1组成员：</div>
+                    <div class="members-container" id="membersContainer">
+                        <!-- 小组成员将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="control-buttons">
+                    <button class="btn draw-btn" id="drawBtn">
+                        <span>🎯</span> 开始抽人
+                    </button>
+                    <button class="btn reset-btn" id="resetBtn">
+                        <span>🔄</span> 重置本组
+                    </button>
+                    <button class="btn draw-all-btn" id="drawAllBtn">
+                        <span>🚀</span> 一键抽取全部
+                    </button>
+                    <button class="btn reset-all-btn" id="resetAllBtn">
+                        <span>🗑️</span> 重置全部
+                    </button>
+                </div>
+                
+                <div class="instructions">
+                    <p><strong>使用说明：</strong></p>
+                    <p>1. 点击上方数字按钮选择小组</p>
+                    <p>2. 点击"开始抽人"抽取当前小组</p>
+                    <p>3. 支持键盘快捷键：数字键1-12选择小组，空格/回车键抽奖</p>
+                </div>
+            </div>
+            
+            <div class="result-display">
+                <h2 class="panel-title">抽人结果展示</h2>
+                <div class="result-container" id="resultContainer">
+                    <!-- 12个组的结果卡片将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="history-panel">
+                    <div class="history-title">抽人历史记录</div>
+                    <div class="history-list" id="historyList">
+                        <!-- 抽人历史记录将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>小竞赛抽人系统 | 共12个组，每个组抽取1人 </p>
+            <p style="margin-top: 5px;">© 2026 小竞赛抽人系统</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 根据提供的名单初始化小组数据
+        const groups = [
+            {
+                id: 1,
+                name: "1",
+                members: [ "吴瑶", "宋浩江","李烁","汪敦根","宋红伟","陈珞","赵子扬","张恩辉","秦瑞","慕浩南"],
+                drawnMember: null
+            },
+            {
+                id: 2,
+                name: "2",
+                members: ["李洋", "吴朝炜","王宇东","白少杰","陈泳延","袁良林","孙鑫泽","张文鹏","韩洋","韩佳伟"],
+                drawnMember: null
+            },
+            {
+                id: 3,
+                name: "3",
+                members: ["王佩伟", "闫炳旭","舒亮","张宇琦","张博思","窦泽鹏","王浩天","李南辉","李剑超"],
+                drawnMember: null
+            },
+            {
+                id: 4,
+                name: "4",
+                members: ["刘广多", "周洋","邢成松","张凯","张嘉鹏","熊乐乐","黄鸿","朱清华","滕金权","赵博凯","史敬豪","赵国翔","周致锦"],
+                drawnMember: null
+            },
+            {
+                id: 5,
+                name: "5",
+                members: ["褚宏成", "郭继富","张文隆","雷星星","张夏","舒长江","刘培行","李显林","王依楠","薛涵予","陈佳乐","陈佳","管国庆","冯任杰"],
+                drawnMember: null
+            },
+            {
+                id: 6,
+                name: "6",
+                members: [ "唐建辉","姜涵","叶国宇","董翼铭","梅航菠","张磊","陶博华","袁烈阳","祝雨农"],
+                drawnMember: null
+            },
+            {
+                id: 7,
+                name: "7",
+                members: ["高佩成", "翟家乐","邓庆宏","叶俊","黄俊喆","张乐乐","伊梓航","许潘","谢乙"],
+                drawnMember: null
+            },
+            {
+                id: 8,
+                name: "8",
+                members: ["李艳魁", "杨澳飞","闫树杰","冯渝","罗杰","周泽雷","王斌","常栋","张特","孙启航","孙浩明","郭润","史缘满","陈炫"],
+                drawnMember: null
+            },
+            {
+                id: 9,
+                name: "9",
+                members: ["谢旗辉", "史创成","刘小海","付强","雒绅琦","张国梁","夏智心","李嘉宇","蒲彦百","田家梁"],
+                drawnMember: null
+            },
+            {
+                id: 10,
+                name: "10",
+                members: ["王宇航", "陈玉印","王嘉豪","邓磊","黄杰","陈嘉杰","温嘉凯","申孔文","陈志强","王帅"],
+                drawnMember: null
+            },
+            {
+                id: 11,
+                name: "11",
+                members: ["漆国臣", "郭显洋","彭恩耀","鞠涵硕","戴杰","邢博帅","汤伟杰"],
+                drawnMember: null
+            },
+            {
+                id: 12,
+                name: "12",
+                members: ["吴礼祥", "刘宇翱","纪明智","汤臣","冯佳豪","赵纪龙","陈力畅","王柏川","王兆泽","樊磊"],
+                drawnMember: null
+            }
+        ];
+        
+        // 跟踪每个成员是否已被抽取
+        const allMembers = {};
+        groups.forEach(group => {
+            group.members.forEach(member => {
+                allMembers[member] = false; // false表示未中奖
+            });
+        });
+        
+        // 当前选中的组
+        let selectedGroup = 1;
+        // 抽人历史记录
+        const drawHistory = [];
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 生成分队选择按钮
+            const groupButtonsContainer = document.getElementById('groupButtons');
+            groups.forEach(group => {
+                const button = document.createElement('button');
+                button.className = 'group-btn';
+                if (group.id === selectedGroup) button.classList.add('active');
+                button.textContent = group.id;
+                button.dataset.groupId = group.id;
+                button.title = group.name;
+                button.addEventListener('click', () => selectGroup(group.id));
+                groupButtonsContainer.appendChild(button);
+            });
+            
+            // 生成结果展示卡片
+            const resultContainer = document.getElementById('resultContainer');
+            groups.forEach(group => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.id = `resultCard-${group.id}`;
+                
+                card.innerHTML = `
+                    <h3>${group.name}</h3>
+                    <div class="result-name" id="resultName-${group.id}">等待抽奖</div>
+                    <div class="result-status" id="resultStatus-${group.id}">成员: ${group.members.join("、")}</div>
+                `;
+                
+                resultContainer.appendChild(card);
+            });
+            
+            // 初始显示第一组成员
+            updateMembersDisplay();
+            
+            // 绑定按钮事件
+            document.getElementById('drawBtn').addEventListener('click', drawLottery);
+            document.getElementById('resetBtn').addEventListener('click', resetGroup);
+            document.getElementById('drawAllBtn').addEventListener('click', drawAllGroups);
+            document.getElementById('resetAllBtn').addEventListener('click', resetAllGroups);
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    drawLottery();
+                }
+                
+                // 数字键1-9选择小组
+                if (e.key >= '1' && e.key <= '9') {
+                    selectGroup(parseInt(e.key));
+                }
+                
+                // 0, -, = 对应10, 11, 12组
+                if (e.key === '0') selectGroup(10);
+                if (e.key === '-') selectGroup(11);
+                if (e.key === '=') selectGroup(12);
+            });
+        });
+        
+        // 选择组
+        function selectGroup(groupId) {
+            selectedGroup = groupId;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.group-btn').forEach(btn => {
+                if (parseInt(btn.dataset.groupId) === groupId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 更新成员显示
+            updateMembersDisplay();
+            
+            // 高亮显示对应结果卡片
+            document.querySelectorAll('.result-card').forEach(card => {
+                card.classList.remove('drawing-animation');
+            });
+            
+            const selectedCard = document.getElementById(`resultCard-${groupId}`);
+            selectedCard.classList.add('drawing-animation');
+            
+            // 移除其他卡片的高亮
+            setTimeout(() => {
+                selectedCard.classList.remove('drawing-animation');
+            }, 1000);
+        }
+        
+        // 更新成员显示
+        function updateMembersDisplay() {
+            const group = groups.find(g => g.id === selectedGroup);
+            const membersTitle = document.getElementById('membersTitle');
+            const membersContainer = document.getElementById('membersContainer');
+            
+            membersTitle.textContent = `${group.name}成员 (${group.members.length}人)：`;
+            
+            // 清空容器
+            membersContainer.innerHTML = '';
+            
+            // 添加成员标签
+            group.members.forEach(member => {
+                const memberTag = document.createElement('div');
+                memberTag.className = 'member-tag';
+                memberTag.textContent = member;
+                
+                // 如果该成员已中奖，添加特殊样式
+                if (allMembers[member]) {
+                    memberTag.style.background = 'rgba(255, 215, 0, 0.3)';
+                    memberTag.style.color = '#ffd700';
+                    memberTag.style.fontWeight = 'bold';
+                }
+                
+                membersContainer.appendChild(memberTag);
+            });
+        }
+        
+        // 抽取单个组
+        function drawLottery() {
+            const group = groups.find(g => g.id === selectedGroup);
+            
+            // 如果该组已抽取，先询问是否重置
+            if (group.drawnMember) {
+                if (!confirm(`${group.name}已经抽取了 ${group.drawnMember}，是否重新抽取？`)) {
+                    return;
+                }
+            }
+            
+            // 获取未中奖的成员
+            const availableMembers = group.members.filter(member => !allMembers[member]);
+            
+            if (availableMembers.length === 0) {
+                alert(`${group.name}所有成员都已中奖，无法继续抽取！`);
+                return;
+            }
+            
+            // 开始抽奖动画
+            const resultCard = document.getElementById(`resultCard-${selectedGroup}`);
+            const resultName = document.getElementById(`resultName-${selectedGroup}`);
+            const resultStatus = document.getElementById(`resultStatus-${selectedGroup}`);
+            
+            resultCard.classList.add('drawing-animation');
+            
+            // 模拟抽奖过程
+            let drawCount = 0;
+            const maxDrawCount = 25;
+            let drawSpeed = 100; // 初始速度（毫秒）
+            
+            const drawInterval = setInterval(() => {
+                // 随机显示一个名字
+                const randomIndex = Math.floor(Math.random() * availableMembers.length);
+                resultName.textContent = availableMembers[randomIndex];
+                
+                drawCount++;
+                
+                // 逐渐减慢速度
+                if (drawCount > 15) {
+                    drawSpeed = 150;
+                }
+                if (drawCount > 20) {
+                    drawSpeed = 200;
+                }
+                
+                if (drawCount >= maxDrawCount) {
+                    clearInterval(drawInterval);
+                    
+                    // 确定最终抽中者
+                    const winnerIndex = Math.floor(Math.random() * availableMembers.length);
+                    const winner = availableMembers[winnerIndex];
+                    
+                    // 更新数据
+                    allMembers[winner] = true;
+                    group.drawnMember = winner;
+                    
+                    // 更新UI
+                    resultName.textContent = winner;
+                    resultStatus.innerHTML = `<span style="color:#4CAF50; font-weight:bold;">🎉 抽中者 | 成员: ${group.members.join("、")}</span>`;
+                    resultCard.classList.add('drawn');
+                    resultCard.classList.remove('drawing-animation');
+                    resultCard.classList.add('winner-effect');
+                    
+                    // 更新成员显示
+                    updateMembersDisplay();
+                    
+                    // 添加到历史记录
+                    const now = new Date();
+                    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                    
+                    const historyItem = {
+                        time: timeStr,
+                        group: group.name,
+                        winner: winner
+                    };
+                    drawHistory.unshift(historyItem);
+                    updateHistory();
+                    
+                    // 移除动画类
+                    setTimeout(() => {
+                        resultCard.classList.remove('winner-effect');
+                    }, 1500);
+                    
+                    // 播放抽中音效
+                    playWinnerSound();
+                }
+            }, drawSpeed);
+        }
+        
+        // 重置当前小组
+        function resetGroup() {
+            const group = groups.find(g => g.id === selectedGroup);
+            
+            if (!group.drawnMember) {
+                alert(`${group.name}尚未抽取，无需重置！`);
+                return;
+            }
+            
+            if (!confirm(`确定要重置${group.name}的抽奖结果吗？`)) {
+                return;
+            }
+            
+            // 重置该组成员的中奖状态
+            if (group.drawnMember) {
+                allMembers[group.drawnMember] = false;
+                group.drawnMember = null;
+            }
+            
+            // 更新UI
+            const resultName = document.getElementById(`resultName-${selectedGroup}`);
+            const resultStatus = document.getElementById(`resultStatus-${selectedGroup}`);
+            const resultCard = document.getElementById(`resultCard-${selectedGroup}`);
+            
+            resultName.textContent = '等待中';
+            resultStatus.textContent = `成员: ${group.members.join("、")}`;
+            resultCard.classList.remove('drawn');
+            
+            // 从历史记录中移除
+            const winnerName = resultName.textContent;
+            const index = drawHistory.findIndex(item => 
+                item.group === group.name && 
+                item.winner === winnerName
+            );
+            
+            if (index !== -1) {
+                drawHistory.splice(index, 1);
+                updateHistory();
+            }
+            
+            // 更新成员显示
+            updateMembersDisplay();
+            
+            alert(`${group.name}已重置，可以重新抽人！`);
+        }
+        
+        // 一键抽取所有组
+        function drawAllGroups() {
+            const groupsToDraw = groups.filter(group => !group.drawnMember);
+            
+            if (groupsToDraw.length === 0) {
+                alert('所有分队组都已抽取完毕！');
+                return;
+            }
+            
+            if (!confirm(`确定要一键抽取所有${groupsToDraw.length}个未抽取组吗？`)) {
+                return;
+            }
+            
+            // 为每个未抽取的组抽取人员
+            groupsToDraw.forEach(group => {
+                const availableMembers = group.members.filter(member => !allMembers[member]);
+                
+                if (availableMembers.length > 0) {
+                    const winnerIndex = Math.floor(Math.random() * availableMembers.length);
+                    const winner = availableMembers[winnerIndex];
+                    
+                    // 更新数据
+                    allMembers[winner] = true;
+                    group.drawnMember = winner;
+                    
+                    // 更新UI
+                    const resultName = document.getElementById(`resultName-${group.id}`);
+                    const resultStatus = document.getElementById(`resultStatus-${group.id}`);
+                    const resultCard = document.getElementById(`resultCard-${group.id}`);
+                    
+                    resultName.textContent = winner;
+                    resultStatus.innerHTML = `<span style="color:#4CAF50; font-weight:bold;">🎉 抽中者 | 成员: ${group.members.join("、")}</span>`;
+                    resultCard.classList.add('drawn');
+                    
+                    // 添加到历史记录
+                    const now = new Date();
+                    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                    
+                    const historyItem = {
+                        time: timeStr,
+                        group: group.name,
+                        winner: winner
+                    };
+                    drawHistory.unshift(historyItem);
+                }
+            });
+            
+            updateHistory();
+            updateMembersDisplay();
+            playWinnerSound();
+            alert(`已为${groupsToDraw.length}个组抽取了人员！`);
+        }
+        
+        // 重置所有小组
+        function resetAllGroups() {
+            if (groups.every(group => !group.drawnMember)) {
+                alert('所有组都尚未抽取，无需重置！');
+                return;
+            }
+            
+            if (!confirm('确定要重置所有组的抽奖结果吗？这将清除所有抽取记录。')) {
+                return;
+            }
+            
+            // 重置所有数据
+            groups.forEach(group => {
+                if (group.drawnMember) {
+                    allMembers[group.drawnMember] = false;
+                    group.drawnMember = null;
+                    
+                    // 更新UI
+                    const resultName = document.getElementById(`resultName-${group.id}`);
+                    const resultStatus = document.getElementById(`resultStatus-${group.id}`);
+                    const resultCard = document.getElementById(`resultCard-${group.id}`);
+                    
+                    resultName.textContent = '等待抽取';
+                    resultStatus.textContent = `成员: ${group.members.join("、")}`;
+                    resultCard.classList.remove('drawn');
+                }
+            });
+            
+            // 清空历史记录
+            drawHistory.length = 0;
+            updateHistory();
+            
+            // 更新成员显示
+            updateMembersDisplay();
+            
+            alert('所有组已重置，可以重新开始抽人！');
+        }
+        
+        // 更新历史记录
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            // 显示最近15条记录
+            const recentHistory = drawHistory.slice(0, 15);
+            
+            if (recentHistory.length === 0) {
+                historyList.innerHTML = '<div class="history-item" style="justify-content:center;">暂无抽取记录</div>';
+                return;
+            }
+            
+            recentHistory.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span>${item.time}</span>
+                    <span>${item.group}</span>
+                    <span class="history-winner">${item.winner}</span>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // 播放抽中音效
+        function playWinnerSound() {
+            try {
+                // 创建简单的音效
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // 创建多个振荡器模拟庆祝音效
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        // 设置音高
+                        const frequencies = [523.25, 659.25, 783.99, 1046.50];
+                        oscillator.frequency.setValueAtTime(frequencies[i % frequencies.length], audioContext.currentTime);
+                        
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                        
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.5);
+                    }, i * 100);
+                }
+            } catch (e) {
+                console.log("音频播放失败，不影响抽奖功能");
+            }
+        }
+        
+        // 初始更新历史记录
+        updateHistory();
+    </script>
+</body>
+</html>
